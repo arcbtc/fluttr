@@ -1,0 +1,85 @@
+{% extends "base.html" %} {% from "macros.jinja" import window_vars with context
+%} {% block scripts %} {{ window_vars(user) }}
+<script src="{{ static_url_for('fluttr/static', path='js/index.js') }}"></script>
+{% endblock %} {% block page %}
+<div class="row q-col-gutter-md" id="makeItRain">
+  <div class="col-12 col-md-8 col-lg-7 q-gutter-y-md">
+    <q-card>
+      <q-card-section>
+        <q-input filled dense v-model.trim="nsec" label="Nsec if using nostr"></q-input>
+        <q-input filled dense v-model.trim="botfather" label="Botfather key if using telegram"></q-input>
+      </q-card-section>
+      <q-card-section>
+        <div class="row" v-for="game in games">
+          <div class="col">
+            <q-toggle label="game.type" v-model="game.enabled"></q-toggle>
+          </div>
+          <div class="col">
+            <q-select  filled dense emit-value v-model="game.wallet"
+              :options="g.user.walletOptions" label="Wallet *"></q-select>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+
+    <q-card>
+      <q-card-section>
+        <div class="row items-center no-wrap q-mb-md">
+          <div class="col">
+            <h5 class="text-subtitle1 q-my-none">Players</h5>
+          </div>
+          <div class="col-auto">
+            <q-btn flat color="grey" @click="exportCSV">Export to CSV</q-btn>
+          </div>
+        </div>
+        <q-table dense flat :rows="flut" row-key="id" :columns="flutTable.columns"
+          v-model:pagination="flutTable.pagination">
+          <fluttr v-slot:header="props">
+            <q-tr :props="props">
+              <q-th v-for="col in props.cols" :key="col.name" :props="props">
+                ${ col.label }
+              </q-th>
+            </q-tr>
+          </fluttr>
+
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                <div v-if="col.field == 'amount'">${ col.value / 1000} sats</div>
+                <div v-else>${ col.value }</div>
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
+  </div>
+
+  <div class="col-12 col-md-4 col-lg-5 q-gutter-y-md">
+    <q-card>
+      <q-card-section>
+        <h6 class="text-subtitle1 q-my-none">
+          {{SITE_TITLE}} Fluttr extension
+        </h6>
+        <p>
+          Casino Nostr bot.
+          <br/>
+          * Satsdice
+          <br/>
+          * Satspot
+          <br/>
+          * Coinflip
+        </p>
+      </q-card-section>
+      <q-card-section class="q-pa-none">
+        <q-separator></q-separator>
+        <q-list>
+          {% include "fluttr/_api_docs.html" %}
+          <q-separator></q-separator>
+          {% include "fluttr/_fluttr.html" %}
+        </q-list>
+      </q-card-section>
+    </q-card>
+  </div>
+</div>
+{% endblock %}
